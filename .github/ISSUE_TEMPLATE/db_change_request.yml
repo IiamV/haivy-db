@@ -1,0 +1,34 @@
+name: DB Schema change Request
+description: This is a template for request to change the database schema and perform a database migration.
+assignees: maik205
+labels: feat
+projects: dorayakidevs/haivy
+body:
+- type: markdown
+  attributes:
+    value: "## Feature request"
+- type: input
+  id: name
+  attributes:
+    label: What is name of the table to be changed/added/removed?
+  validations:
+    required: true
+- type: textarea
+  id: purpose
+  attributes:
+    label: Why are we doing the change?
+    description: "Why are we changing the table? What is the purpose of life?"
+  validations:
+    required: true
+- type: textarea
+  id: input
+  attributes:
+    label: What is the original table structure?
+  validations:
+    required: true
+- type: textarea
+  id: output
+  attributes:
+    label: What is the table changed to?
+  validations:
+    required: true

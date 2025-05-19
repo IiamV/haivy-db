@@ -1,6 +1,6 @@
 -- account ascosiated
 create table AccountDetails(-- contains basic information of an account
-  account_uid serial primary key,
+  account_uid uuid primary key,
   first_name varchar(50), -- can be null and dummy name is auto-generated
   last_name varchar(50), -- can be null and dummy name is auto-generated
   dob date, -- can be null
@@ -9,26 +9,26 @@ create table AccountDetails(-- contains basic information of an account
 );
 --patient accociated
 create table Patient(
-  patient_uid serial primary key, 
+  patient_uid uuid primary key, 
   account_uid integer references AccountDetails(account_uid),
   anonymous_status boolean default true, -- when a patient has an account, can be use to set visibility of patient information
 );
 create table Staff(
-  staff_id serial primary key,
+  staff_id uuid primary key,
   account_uid integer references AccountDetails(account_uid),
   role varchar(20),
   join_date date,
   status boolean  
 );
 create table Ticket(
-  ticket_id serial primary key,
+  ticket_id uuid primary key,
   assigned_to integer references Staff(staff_id),
   date_created date,
   content text,
   status boolean
 );
 create table Appointment(
-  appointment_id serial primary key,
+  appointment_id uuid primary key,
   staff_id integer references Staff(staff_id), 
   ticket_id integer references Ticket(ticket_id),
   patient_id integer references Patient(patient_id),
@@ -40,7 +40,7 @@ create table Appointment(
 );
 --Doctor accociated
 create table Specification(
-  specification_id serial primary key,
+  specification_id uuid primary key,
   name varchar(50);
   achieved_date date,
   level integer
@@ -76,18 +76,18 @@ create table DoctorSchedule(
 -- --regimen ascociated
 --version 1
 create table Medicine(
-  medicine_id serial primary key,
+  medicine_id uuid primary key,
   name varchar(50),
   description text,
   is_available boolean
 );
 create table Prescription(
-  prescription_id serial primary key,
+  prescription_id uuid primary key,
   name varchar(50),
   note text
 );
 create table PrescriptionDetail(
-  prescription_detail_id serial primary key,
+  prescription_detail_id uuid primary key,
   prescription_id integer references Prescription(prescription_id),
   medicine_id integer references Medicine(medicine_id),
   start_time timestamp,
@@ -97,13 +97,13 @@ create table PrescriptionDetail(
   note text
 );
 create table CustomizedRegimen(
-  cus_regimen_id serial primary key,
+  cus_regimen_id uuid primary key,
   name varchar(50),
   description text,
   create_time date
 );
 create table CustomizedRegimenDetail(
-  cus_regimen_detail_id serial primary key,
+  cus_regimen_detail_id uuid primary key,
   cus_regimen_id integer references Regimen(cus_regimen_id),
   prescription_id integer references Prescription(prescription_id),
   start_date date,
@@ -113,20 +113,20 @@ create table CustomizedRegimenDetail(
   note text
 );
 create table IntakeHistory(
-  intake_id serial primary key,
+  intake_id uuid primary key,
   prescription_id integer references Prescription(prescription_id),
   dosage_time timestamp not null,
   actual_time timestamp,
   note text
 );
 create table Regimen(
-  regimen_id serial primary key,
+  regimen_id uuid primary key,
   name varchar(50),
   create_date date,
   description text
 );
 create table RegimenDetail(
-  regimen_detail_id serial primary key,
+  regimen_detail_id uuid primary key,
   regimen_id integer references Regimen(regimen_id),
   medicine_id integer references Medicine(medicine_id),
   start_date date,
@@ -136,7 +136,7 @@ create table RegimenDetail(
   note text
 );
 create table IntakeHistory(
-  intake_id serial primary key,
+  intake_id uuid primary key,
   patient_id integer references Patient(patient_id),
   prescription_id integer references Prescription(prescription_id),
   take_time timestamp,

@@ -49,9 +49,9 @@ create table Specification(
 -- create type session_day as enum ('Morning', 'Afternoon', 'Evening', 'Midnight');
 
 create table DoctorSpecification(
-  staff_id integer references Staff(staff_id)
-  specification_id integer references Specification(specification_id)
-  primary key (staff_id, specification_id)
+  staff_id integer references Staff(staff_id),
+  specification_id integer references Specification(specification_id),
+  primary key (staff_id, specification_id),
 );
 create table DaySession(
   day_session varchar(20) primary key,

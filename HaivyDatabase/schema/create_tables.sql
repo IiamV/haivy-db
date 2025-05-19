@@ -78,11 +78,21 @@ create table DoctorSchedule(
 );
 -- --regimen ascociated
 --version 1
+create type med_timing as enum ('empty stomach', 'before meal', 'with meal', 'after meal'); 
+/*
+explaination:
+1.empty stomach ->  at least 1hr before meal or ~2hr after meal
+2.before meal -> ~15-30min before meal
+3.with meal -> taken together when having meal
+4. after meal -> ~15-30min after a meal
+the enums can be compared as numbered (ex: empty stomach < before meal)
+*/
 create table Medicine(
   medicine_id uuid primary key default gen_random_uuid(),
   name varchar(50),
   description text,
-  is_available boolean
+  is_available boolean,
+  med_time med_timing
 );
 create table Prescription(
   prescription_id uuid primary key default gen_random_uuid(),

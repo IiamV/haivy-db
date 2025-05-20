@@ -1,5 +1,5 @@
 --create the uuid random generate extension, (we had it installed but i'm doing it for asurance ;))
-create extension if not exist "pgcrypto";
+--create extension if not exist "pgcrypto";
 -----------------------------------
 -- account table 
 create table AccountDetails(-- contains basic information of an account
@@ -14,39 +14,47 @@ create table AccountDetails(-- contains basic information of an account
 --patient table
 create table Patient(
   patient_uid uuid primary key default gen_random_uuid(), 
+  account_uid uuid,
   anonymous_status boolean default true, -- when a patient has an account, can be use to set visibility of patient information
-  foreign key account_uid uuid references auth.users(id)
+  foreign key (account_uid) references auth.users(id)
 );
 -----------------------------------
 --staff table
 create table Staff(
   staff_id uuid primary key default gen_random_uuid(),
-  foreign key account_uid uuid references auth.users(id),
+  account_uid uuid,
+  foreign key (account_uid) references auth.users(id),
   role varchar(20),
   join_date date,
   status boolean  
 );
 -----------------------------------
+--enum for status ticket/appointment
+create type tik_status as enum('pending','booked', 'closed', 'canceled');
+create type apt_status as enum('pending', 'scheduled', 'in progress', 'completed', 'canceled','no show');
 --ticket table
 create table Ticket(
   ticket_id uuid primary key default gen_random_uuid(),
-  foreign key assigned_to uuid references Staff(staff_id),
+  assigned_to uuid references Staff(staff_id),
   date_created date,
   content text,
-  status boolean
+  status tik_status default 'pending'
 );
 -----------------------------------
 --appointment table
 create table Appointment(
   appointment_id uuid primary key default gen_random_uuid(),
-  foreign key staff_id uuid references Staff(staff_id), 
-  foreign key ticket_id uuid references Ticket(ticket_id),
-  foreign key patient_uid uuid references Patient(patient_uid),
+  staff_id uuid,
+  ticket_id uuid,
+  patient_uid uuid,
+  foreign key (staff_id) references Staff(staff_id), 
+  foreign key (ticket_id) references Ticket(ticket_id),
+  foreign key (patient_uid) references Patient(patient_uid),
   created_date date,
   meeting_date date,
   content text,
   visibility boolean,
-  status boolean
+  status apt_status default 'pending'
 );
 -----------------------------------
 --Doctor specification 
@@ -60,9 +68,11 @@ create table Specification(
 -- create type session_day as enum ('Morning', 'Afternoon', 'Evening', 'Midnight');
 
 create table DoctorSpecification(
-  foreign key staff_id uuid references Staff(staff_id),
-  foreign key specification_id uuid references Specification(specification_id),
-  primary key (staff_id, specification_id),
+  staff_id uuid,
+  specification_id uuid,
+  foreign key (staff_id) references Staff(staff_id),
+  foreign key (specification_id)references Specification(specification_id),
+  primary key (staff_id, specification_id)
 );
 -----------------------------------
 --doctor schedule
@@ -113,8 +123,10 @@ create table Prescription(
 );
 create table PrescriptionDetail(
   prescription_detail_id uuid primary key default gen_random_uuid(),
-  foreign key prescription_id uuid references Prescription(prescription_id),
-  foreign key medicine_id uuid references Medicine(medicine_id),
+  prescription_id uuid,
+  medicine_id uuid,
+  foreign key (prescription_id) references Prescription(prescription_id),
+  foreign key (medicine_id) references Medicine(medicine_id),
   start_time timestamptz,
   end_time timestamptz,
   dosage float,
@@ -131,8 +143,10 @@ create table CustomizedRegimen(
 );
 create table CustomizedRegimenDetail(
   cus_regimen_detail_id uuid primary key default gen_random_uuid(),
-  foreign key cus_regimen_id uuid references Regimen(cus_regimen_id),
-  foreign key prescription_id uuid references Prescription(prescription_id),
+  cus_regimen_id uuid,
+  prescription_id uuid,
+  foreign key (cus_regimen_id) references CustomizedRegimen(cus_regimen_id),
+  foreign key (prescription_id) references Prescription(prescription_id),
   start_date date,
   end_date date,
   total_dosage float,
@@ -149,8 +163,10 @@ create table Regimen(
 );
 create table RegimenDetail(
   regimen_detail_id uuid primary key default gen_random_uuid(),
-  foreign key regimen_id uuid references Regimen(regimen_id),
-  foreign key medicine_id uuid references Medicine(medicine_id),
+  regimen_id uuid,
+  medicine_id uuid,
+  foreign key (regimen_id) references Regimen(regimen_id),
+  foreign key (medicine_id) references Medicine(medicine_id),
   start_date date,
   end_date date,
   total_dosage float,
@@ -161,8 +177,10 @@ create table RegimenDetail(
 --patient medicine intake history
 create table IntakeHistory(
   intake_id uuid primary key default gen_random_uuid(),
-  foreign key patient_uid uuid references Patient(patient_uid),
-  foreign key prescription_id uuid references Prescription(prescription_id),
+  patient_uid uuid,
+  prescription_id uuid,
+  foreign key (patient_uid) references Patient(patient_uid),
+  foreign key (prescription_id) references Prescription(prescription_id),
   take_time timestamptz,
   missed boolean,
   note text,

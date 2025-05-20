@@ -15,13 +15,13 @@ create table AccountDetails(-- contains basic information of an account
 create table Patient(
   patient_uid uuid primary key default gen_random_uuid(), 
   anonymous_status boolean default true, -- when a patient has an account, can be use to set visibility of patient information
-  foreign key account_uid references auth.users(id)
+  foreign key account_uid uuid references auth.users(id)
 );
 -----------------------------------
 --staff table
 create table Staff(
   staff_id uuid primary key default gen_random_uuid(),
-  foreign key account_uid integer references auth.users(id),
+  foreign key account_uid uuid references auth.users(id),
   role varchar(20),
   join_date date,
   status boolean  
@@ -30,7 +30,7 @@ create table Staff(
 --ticket table
 create table Ticket(
   ticket_id uuid primary key default gen_random_uuid(),
-  foreign key assigned_to integer references Staff(staff_id),
+  foreign key assigned_to uuid references Staff(staff_id),
   date_created date,
   content text,
   status boolean
@@ -39,9 +39,9 @@ create table Ticket(
 --appointment table
 create table Appointment(
   appointment_id uuid primary key default gen_random_uuid(),
-  foreign key staff_id integer references Staff(staff_id), 
-  foreign key ticket_id integer references Ticket(ticket_id),
-  patient_uid integer references Patient(patient_uid),
+  foreign key staff_id uuid references Staff(staff_id), 
+  foreign key ticket_id uuid references Ticket(ticket_id),
+  foreign key patient_uid uuid references Patient(patient_uid),
   created_date date,
   meeting_date date,
   content text,
@@ -60,8 +60,8 @@ create table Specification(
 -- create type session_day as enum ('Morning', 'Afternoon', 'Evening', 'Midnight');
 
 create table DoctorSpecification(
-  staff_id integer references Staff(staff_id),
-  foreign key specification_id integer references Specification(specification_id),
+  foreign key staff_id uuid references Staff(staff_id),
+  foreign key specification_id uuid references Specification(specification_id),
   primary key (staff_id, specification_id),
 );
 -----------------------------------
@@ -80,7 +80,7 @@ create table WeekDay(
   foreign key(day_session) references DaySession(day_session)
 );
 create table DoctorSchedule(
-  staff_id integer references Staff(staff_id),
+  staff_id uuid references Staff(staff_id),
   day_of_week varchar(20),
   day_session varchar(20),
   primary key (staff_id, day_of_week, day_session),
@@ -113,8 +113,8 @@ create table Prescription(
 );
 create table PrescriptionDetail(
   prescription_detail_id uuid primary key default gen_random_uuid(),
-  foreign key prescription_id integer references Prescription(prescription_id),
-  foreign key medicine_id integer references Medicine(medicine_id),
+  foreign key prescription_id uuid references Prescription(prescription_id),
+  foreign key medicine_id uuid references Medicine(medicine_id),
   start_time timestamptz,
   end_time timestamptz,
   dosage float,
@@ -131,8 +131,8 @@ create table CustomizedRegimen(
 );
 create table CustomizedRegimenDetail(
   cus_regimen_detail_id uuid primary key default gen_random_uuid(),
-  foreign key cus_regimen_id integer references Regimen(cus_regimen_id),
-  foreign key prescription_id integer references Prescription(prescription_id),
+  foreign key cus_regimen_id uuid references Regimen(cus_regimen_id),
+  foreign key prescription_id uuid references Prescription(prescription_id),
   start_date date,
   end_date date,
   total_dosage float,
@@ -149,8 +149,8 @@ create table Regimen(
 );
 create table RegimenDetail(
   regimen_detail_id uuid primary key default gen_random_uuid(),
-  foreign key regimen_id integer references Regimen(regimen_id),
-  foreign key medicine_id integer references Medicine(medicine_id),
+  foreign key regimen_id uuid references Regimen(regimen_id),
+  foreign key medicine_id uuid references Medicine(medicine_id),
   start_date date,
   end_date date,
   total_dosage float,
@@ -161,8 +161,8 @@ create table RegimenDetail(
 --patient medicine intake history
 create table IntakeHistory(
   intake_id uuid primary key default gen_random_uuid(),
-  foreign key patient_uid integer references Patient(patient_uid),
-  foreign key prescription_id integer references Prescription(prescription_id),
+  foreign key patient_uid uuid references Patient(patient_uid),
+  foreign key prescription_id uuid references Prescription(prescription_id),
   take_time timestamptz,
   missed boolean,
   note text,

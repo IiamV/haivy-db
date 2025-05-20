@@ -27,13 +27,16 @@ create table Staff(
   status boolean  
 );
 -----------------------------------
+--enum for status ticket/appointment
+create type tik_status as enum('pending','booked', 'closed', 'canceled');
+create type apt_status as enum('pending', 'scheduled', 'in progress', 'completed', 'canceled','no show');
 --ticket table
 create table Ticket(
   ticket_id uuid primary key default gen_random_uuid(),
   foreign key assigned_to uuid references Staff(staff_id),
   date_created date,
   content text,
-  status boolean
+  status tik_status default 'pending'
 );
 -----------------------------------
 --appointment table
@@ -46,7 +49,7 @@ create table Appointment(
   meeting_date date,
   content text,
   visibility boolean,
-  status boolean
+  status apt_status default 'pending'
 );
 -----------------------------------
 --Doctor specification 

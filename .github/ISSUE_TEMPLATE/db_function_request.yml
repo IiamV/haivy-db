@@ -1,0 +1,59 @@
+name: DB function Request
+description: This template is for requesting a Database Function for Supabase.
+assignees: IiamV
+labels: feat
+projects: dorayakidevs/haivy
+body:
+- type: markdown
+  attributes:
+    value: "## Database Function Request"
+- type: input
+  id: name
+  attributes:
+    label: What is the function called
+    description: "The name should be short and concise, describing the fn in the most general way."
+  validations:
+    required: true
+- type: textarea
+  id: input
+  attributes:
+    label: What is the input parameters of this function?
+    description: "Describe the input parameters and its data type."
+  validations:
+    required: true
+- type: dropdown
+  id: outputType
+  attributes:
+    label: Output data type
+    options:
+      - void
+      - record
+      - trigger
+      - integer
+      - bool
+      - bytea
+      - date
+      - double precision
+      - float4
+      - float8
+      - int2
+      - int4
+      - int8
+      - json
+      - jsonb
+      - numeric
+      - text
+      - time
+      - timestamp
+      - timestamptz
+      - timetz
+      - uuid
+      - varchar
+      - vector
+- type: textarea
+  id: output
+  attributes:
+    label: What is the output of this function?
+    description: "Describe the output parameters and give description for each field if the output is of composite type."
+  validations:
+    required: true

@@ -32,11 +32,13 @@ create table Staff(
 --enum for status ticket/appointment
 create type tik_status as enum('pending','booked', 'closed', 'canceled');
 create type apt_status as enum('pending', 'scheduled', 'in progress', 'completed', 'canceled','no show');
+create type ticket_type as enum('appointment', 'test', 'other');
 --ticket table
 create table Ticket(
   ticket_id uuid primary key default gen_random_uuid(),
   assigned_to uuid references Staff(staff_id),
   date_created date,
+  ticket_type ticket_type,
   content text,
   status tik_status default 'pending'
 );

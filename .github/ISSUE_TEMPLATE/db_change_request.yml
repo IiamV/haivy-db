@@ -6,7 +6,7 @@ projects: dorayakidevs/haivy
 body:
 - type: markdown
   attributes:
-    value: "## Feature request"
+    value: "## Schema Change Request"
 - type: input
   id: name
   attributes:

@@ -37,7 +37,7 @@ create type ticket_type as enum('appointment', 'test', 'other');
 create table Ticket(
   ticket_id uuid primary key default gen_random_uuid(),
   assigned_to uuid references Staff(staff_id),
-  date_created date,
+  date_created timestamptz,
   ticket_type ticket_type,
   content text,
   status tik_status default 'pending'

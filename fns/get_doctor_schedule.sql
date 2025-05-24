@@ -4,9 +4,15 @@ $$
 declare json_result json;
 begin
 -- start return the json
-select json_agg(
+select jsonb_agg(   
+    /*
+    Note: about the store type of jsonb_agg()* and  json_agg()**
+    (*) store type is binary and it's arrange the field alphabetically, remove whitespaces and normalize number (eg: select '{"count": 01.00}'::json the result will be {"count":1.0})
+    (**) store type is text, it's preserve any format and does not remove whitespaces, number will not be normalize (eg: select '{"count": 01.00}'::json the result will be {"count":01.00})
+    These differences only affect back-end's queries.
+    */
     jsonb_build_object(
-    'metting_date', apt.meeting_date,
+    'meeting_date', apt.meeting_date,
     'duration', apt.duration,
     'status', apt.status,
     'content', apt.content,
@@ -15,7 +21,7 @@ select json_agg(
         'account_uid', ad.account_uid,
         'full_name', concat(ad.first_name,' ', ad.last_name),--this will return null if either first or last name is null
         'dob', ad.dob,
-        'profile_picrure', ad.profile_picrure,
+        'profile_picrure', ad.profile_picture,
         'account_type', ad.account_type
     ),
     'ticket_id', ti.ticket_id

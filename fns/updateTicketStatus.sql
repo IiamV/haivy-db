@@ -1,67 +1,50 @@
+-- Policy: Only assigned staff can update table ticket
+CREATE POLICY "staffUpdateTicket_policy" ON public.ticket
+FOR UPDATE 
+TO authenticated
+USING (
+    assigned_to IN (
+        SELECT staff_id 
+        FROM staff 
+        WHERE account_uid = auth.uid() 
+        AND status = true
+    )
+)
+WITH CHECK (
+    assigned_to IN (
+        SELECT staff_id 
+        FROM staff 
+        WHERE account_uid = auth.uid() 
+        AND status = true
+    )
+);
+
 CREATE OR REPLACE FUNCTION public.updateTicketStatus(
     ticket_id UUID,
     new_status tik_status
 )
-RETURNS VOID
-SECURITY DEFINER --allow any user to run this func
-AS $$
+RETURNS VOID AS $$
 DECLARE
-    current_user_id UUID;
-    assigned_staff_id UUID;
     current_status tik_status;
+    update_count INTEGER;
 BEGIN
-    -- Get current user ID
-    SELECT auth.uid() INTO current_user_id;
+    -- Get current status
+    SELECT status INTO current_status
+    FROM ticket 
+    WHERE ticket.ticket_id = updateTicketStatus.ticket_id;
     
-    -- Get the ticket assigned staff and current status
-    SELECT t.assigned_to, t.status
-    INTO assigned_staff_id, current_status
-    FROM ticket t
-    WHERE t.ticket_id = updateTicketStatus.ticket_id;
- 
-    
-    -- Check if the current user == assigned staff
-    IF NOT EXISTS (
-        SELECT 1 FROM staff s 
-        WHERE s.staff_id = assigned_staff_id 
-        AND s.account_uid = current_user_id
-        AND s.status = true
-    ) THEN
-        INSERT INTO ticket_interaction_history (ticket_id, action, note, by)
-        VALUES (
-            updateTicketStatus.ticket_id, 
-            'dismiss'::ticket_interaction_type, 
-            'Authorization denied',
-            current_user_id
-        );
-        RETURN;
-    END IF;
-    
-    -- Logs no changes
-    IF current_status = new_status THEN
-        INSERT INTO ticket_interaction_history (ticket_id, action, note)
-        VALUES (
-            updateTicketStatus.ticket_id, 
-            'comment'::ticket_interaction_type, 
-            'Status update but no change needed (already ' || current_status || ')'
-        );
-        RETURN;
-    END IF;
-    
-    -- Update the ticket status
+    -- Update ticket status
     UPDATE ticket 
     SET status = new_status 
     WHERE ticket.ticket_id = updateTicketStatus.ticket_id;
     
-    -- Log the change in interaction history
+    -- Logs the change
     INSERT INTO ticket_interaction_history (ticket_id, action, note, by)
     VALUES (
         updateTicketStatus.ticket_id, 
         'processed'::ticket_interaction_type,
         'Status changed from ' || current_status || ' to ' || new_status, 
-        current_user_id
+        auth.uid()
     );
-    
 END;
 $$ LANGUAGE plpgsql;
-GRANT EXECUTE ON FUNCTION public.updateTicketStatus(UUID, tik_status) TO authenticated;

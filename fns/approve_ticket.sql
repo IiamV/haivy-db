@@ -24,7 +24,7 @@ values
 
 exception
     when others then
-        raise notice 'Something went wrong when approving ticket, please check if the input data match information in the database', sqlerrm;
+        raise notice 'Something went wrong when approving ticket, Error: %', sqlerrm;
 end;
 $$
 language plpgsql;

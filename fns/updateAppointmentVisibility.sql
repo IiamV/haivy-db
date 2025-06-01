@@ -3,9 +3,24 @@ CREATE OR REPLACE FUNCTION updateAppointmentVisibility(
     isPublic boolean
 )
 RETURNS VOID AS $$
+DECLARE 
+    ticket_id_temp uuid;
 BEGIN
-    UPDATE Appointment apt
-    SET apt.isPublic = isPublic
+    SELECT apt.ticket_id INTO ticket_id_temp
+    FROM Appointment apt
     WHERE apt.appointment_id = id;
+
+    UPDATE Appointment apt
+    SET apt.visibility = isPublic
+    WHERE apt.appointment_id = id;
+
+    INSERT INTO ticket_interaction_history (ticket_id, time, action, note, by)
+    VALUES (
+        ticket_id_temp, 
+        now(),
+        'comment'::ticket_interaction_type, 
+        'Visibility update changed to ' || status || ' for appointment ' || id, 
+        auth.uid()
+    );
 END;
 $$ LANGUAGE plpgsql;

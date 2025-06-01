@@ -19,7 +19,7 @@ BEGIN
     VALUES (
         ticket_id_temp, 
         now(),
-        'comment'::ticket_interaction_type, 
+        'appointment_update'::ticket_interaction_type, 
         'Status update changed from ' || old_status || ' to ' || status || ' for appointment ' || id, 
         auth.uid()
     );

@@ -18,7 +18,7 @@ BEGIN
     VALUES (
         ticket_id_temp, 
         now(),
-        'comment'::ticket_interaction_type, 
+        'appointment_update'::ticket_interaction_type, 
         'Visibility update changed to ' || status || ' for appointment ' || id, 
         auth.uid()
     );

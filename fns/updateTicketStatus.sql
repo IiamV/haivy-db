@@ -1,24 +1,3 @@
--- Policy: Only assigned staff can update table ticket
-CREATE POLICY "staffUpdateTicket_policy" ON public.ticket
-FOR UPDATE 
-TO authenticated
-USING (
-    assigned_to IN (
-        SELECT staff_id 
-        FROM staff 
-        WHERE account_uid = auth.uid() 
-        AND status = true
-    )
-)
-WITH CHECK (
-    assigned_to IN (
-        SELECT staff_id 
-        FROM staff 
-        WHERE account_uid = auth.uid() 
-        AND status = true
-    )
-);
-
 CREATE OR REPLACE FUNCTION public.updateTicketStatus(
     ticket_id UUID,
     new_status tik_status

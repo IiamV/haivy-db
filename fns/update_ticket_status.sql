@@ -1,10 +1,10 @@
-CREATE OR REPLACE FUNCTION public.updateTicketStatus(
+CREATE OR REPLACE FUNCTION public.update_ticket_status(
     ticket_id UUID,
-    new_status tik_status
+    new_status ticket_status
 )
 RETURNS VOID AS $$
 DECLARE
-    current_status tik_status;
+    current_status ticket_status;
     update_count INTEGER;
 BEGIN
     -- Get current status

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.create_appointment(
+CREATE OR REPLACE FUNCTION create_appointment(
   p_duration INTEGER,
   p_meeting_date TIMESTAMPTZ,
   p_isPublic BOOLEAN,

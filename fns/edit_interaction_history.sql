@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION editInteractionHistory(
+CREATE OR REPLACE FUNCTION edit_interaction_history(
     uid integer,
     note text
 )

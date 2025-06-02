@@ -19,9 +19,9 @@ returns void as
     values (
         temp_ticket_id,
         now(),
-        'comment',
+        'appointment_update',
         format('Updated appointment id: %s  with new meeting time: %L', id_to_update::text, new_meeting_time),
-        current_setting('jwt.claim.user_id')::uuid
+        auth.uid()
     );
 end;
  $$

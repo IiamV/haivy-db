@@ -19,9 +19,9 @@ begin
     values (
         temp_ticket_id,
         now(),
-        'comment',
+        'appointment_update',
         format('Updated appointment id: %s  with new content: %s', id_to_update::text, new_content),  -- format note for readability
-        current_setting('jwt.claim.user_id')::uuid                                                  -- this takes the id of the logged in user who is the modifier
+        auth.uid()                                                 -- this takes the id of the logged in user who is the modifier
     );
 end;
 $$

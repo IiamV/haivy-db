@@ -33,6 +33,13 @@ Use **snake\_case** and follow this format:
 * `order_items`
 * `payment_methods`
 ---
+### Function parameters
+* Please append the word `p_` for function parameters and declarations.
+#### Examples:
+* `created_at_timestamp`
+* `user_id`
+* `is_deleted_flag`
+---
 ### Field Naming
 * Follow the **general naming scheme** as described above.
 #### Examples:

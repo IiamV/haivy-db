@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION public.dismiss_ticket(
 )
 RETURNS VOID AS $$
 DECLARE
-    current_user_id UUID;
+
     ticket_exists BOOLEAN;
 BEGIN
     -- Update the ticket status

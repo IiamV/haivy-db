@@ -36,9 +36,9 @@ Use **snake\_case** and follow this format:
 ### Function parameters
 * Please append the word `p_` for function parameters and declarations.
 #### Examples:
-* `created_at_timestamp`
-* `user_id`
-* `is_deleted_flag`
+* `p_created_at_timestamp`
+* `p_user_id`
+* `p_is_deleted_flag`
 ---
 ### Field Naming
 * Follow the **general naming scheme** as described above.

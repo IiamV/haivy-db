@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION delete_medicine(
+CREATE OR REPLACE FUNCTION delete_medication(
     med_id uuid
 )
 RETURNS VOID AS $$

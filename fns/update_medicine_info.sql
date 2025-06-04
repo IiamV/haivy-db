@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION update_medicine(
+CREATE OR REPLACE FUNCTION update_medication_info(
     med_id uuid,
     med_name varchar,
     med_description text,

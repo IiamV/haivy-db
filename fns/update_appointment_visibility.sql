@@ -14,13 +14,11 @@ BEGIN
     SET apt.visibility = isPublic
     WHERE apt.appointment_id = id;
 
-    INSERT INTO ticket_interaction_history (ticket_id, time, action, note, by)
+    INSERT INTO ticket_interaction_history (ticket_id, action, note)
     VALUES (
         ticket_id_temp, 
-        now(),
         'appointment_update'::ticket_interaction_type, 
-        'Visibility update changed to ' || status || ' for appointment ' || id, 
-        auth.uid()
+        'Visibility update changed to ' || status || ' for appointment ' || id
     );
 END;
 $$ LANGUAGE plpgsql;

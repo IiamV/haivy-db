@@ -15,13 +15,11 @@ BEGIN
     SET apt.staff_id = staff_id
     WHERE apt.appointment_id = id;
 
-    INSERT INTO ticket_interaction_history (ticket_id, time, action, note, by)
+    INSERT INTO ticket_interaction_history (ticket_id, action, note)
     VALUES (
         ticket_id_temp, 
-        now(),
         'appointment_update'::ticket_interaction_type, 
-        'Doctor update changed from ' || old_staff_id || ' to ' || staff_id || ' for appointment ' || id, 
-        auth.uid()
+        'Doctor update changed from ' || old_staff_id || ' to ' || staff_id || ' for appointment ' || id
     );
 END;
 $$ LANGUAGE plpgsql;

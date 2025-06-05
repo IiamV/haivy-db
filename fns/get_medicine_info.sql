@@ -15,5 +15,9 @@ BEGIN
         WHERE m.medicine_id = med_id;
 
         RETURN result;
+-- incase error occurs
+EXCEPTION
+        WHEN OTHERS THEN
+        RAISE EXCEPTION 'Something went wrong when trying to view this medicine: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql;

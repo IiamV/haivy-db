@@ -1,3 +1,94 @@
+--
+-- Name: account_type; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."account_type" AS ENUM('staff', 'patient');
+
+--
+-- Name: TYPE "account_type"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."account_type" IS 'This discerns between Staffs and user account';
+
+--
+-- Name: appointment_status; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."appointment_status" AS ENUM(
+  'pending',
+  'scheduled',
+  'in_progress',
+  'completed',
+  'canceled',
+  'no_show'
+);
+
+--
+-- Name: medicine_timing; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."medicine_timing" AS ENUM(
+  'empty stomach',
+  'before meal',
+  'with meal',
+  'after meal'
+);
+
+--
+-- Name: role; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."role" AS ENUM(
+  'customer',
+  'staff',
+  'doctor',
+  'manager',
+  'administrator'
+);
+
+--
+-- Name: staff_role; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."staff_role" AS ENUM('doctor', 'staff', 'manager', 'admin');
+
+--
+-- Name: ticket_interaction_type; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."ticket_interaction_type" AS ENUM(
+  'create',
+  'forward',
+  'cancel',
+  'approve',
+  'other',
+  'comment',
+  'appointment_update',
+  'edit'
+);
+
+--
+-- Name: TYPE "ticket_interaction_type"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."ticket_interaction_type" IS 'This denotes what was done to the ticket.';
+
+--
+-- Name: ticket_status; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."ticket_status" AS ENUM('pending', 'cancelled', 'approved');
+
+--
+-- Name: TYPE "ticket_status"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."ticket_status" IS 'Tickets are units of work for staffs to process, it can be related to company''s operations like appointments, tests, database requests,.. etc. It can be of 3 statuses: pending - The ticket is currently being processed, cancelled - The ticket was cancelled (Unsuccessful), approved - The ticket was approved (Successful)';
+
+--
+-- Name: ticket_type; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."ticket_type" AS ENUM('appointment', 'test', 'other');
+
+--
+-- Name: TYPE "ticket_type"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."ticket_type" IS 'This is possible ticket types';
+
 CREATE TABLE
   public.appointment (
     appointment_id uuid NOT NULL DEFAULT gen_random_uuid (),

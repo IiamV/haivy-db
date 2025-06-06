@@ -1,11 +1,11 @@
 CREATE OR REPLACE FUNCTION edit_interaction_history(
-    uid integer,
-    note text
+    p_id integer,
+    p_note text
 )
 RETURNS VOID AS $$
 BEGIN
     UPDATE ticket_interaction_history history
-    SET history.note = note
-    WHERE history.id = uid;
+    SET history.note = p_note
+    WHERE history.id = p_id;
 END;
 $$ LANGUAGE plpgsql;

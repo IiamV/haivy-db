@@ -1,13 +1,20 @@
 CREATE OR REPLACE FUNCTION query_account_information(_offset integer, _limit integer, query text) 
 returns json as $$
-DECLARE
-    res json
-BEGIN  
-SELECT json_agg(ad) FROM accountdetails ad INTO res WHERE  first_name LIKE "%"||query||"%" 
-                                    OR last_name LIKE "%"||query||"%" 
-                                    OR account_type LIKE "%"||query||"%" 
-LIMIT _limit OFFSET _offset;
-RETURN json_build_object(
-    'users', res
-);
+DECLARE 
+    res JSON;
+    pat TEXT;
+BEGIN
+    pat := '%' || query || '%';
+
+    SELECT json_agg(ud)
+    FROM user_details ud INTO res
+    WHERE
+        full_name ILIKE pat
+        OR array_to_string(roles::text[], '') ILIKE pat
+    LIMIT _limit
+    OFFSET _offset;
+
+    RETURN COALESCE(res, '[]'::JSON);
 END;
+$$;
+-- By @The3dit0r

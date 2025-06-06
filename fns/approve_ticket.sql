@@ -1,31 +1,22 @@
-create or replace function approve_ticket(ticket_id_to_approve uuid, approve_note text)
-returns void as
+-- Name: approve_ticket("uuid", "text"); Type: FUNCTION; Schema: public; Owner: -
+CREATE OR REPLACE FUNCTION "public"."approve_ticket" (
+  "p_ticket_id" "uuid",
+  "p_note" "text"
+) RETURNS "void" LANGUAGE "plpgsql" AS $$
+BEGIN
 
-$$
-declare 
-    temp_ticket_id uuid;
-    temp_staff_id uuid;
-begin
--- log the ticket interaction history
-select ti.ticket_id, ti.created_by
-into temp_ticket_id, temp_staff_id
-from Ticket ti
-where ticket_id_to_approve = ti.ticket_id;
+  -- update the related appointment status
+  UPDATE public.appointment apt
+  SET status = 'approved'::public.appointment_status
+  WHERE apt.ticket_id = p_ticket_id;
 
--- update the related appointment status
-update appointment apt
-set apt.status = 'approved'
-where apt.ticket_id = ticket_id_to_approve;
+  --insert information into tables
+  INSERT INTO public.ticket_interaction_history(ticket_id, action, note)
+  VALUES
+  (p_ticket_id, 'approve'::public.ticket_interaction_type, p_note);
 
---insert information into tables
-insert into Ticket_interaction_history(ticket_id, time , action, note, "by")
-values
-(temp_ticket_id, now(), 'processed', approve_note, temp_staff_id);
-
-exception
-    when others then
-        raise notice 'Something went wrong when approving ticket, Error: %', sqlerrm;
-end;
-$$
-language plpgsql;
-
+EXCEPTION
+    WHEN others THEN
+        RAISE NOTICE 'Something went wrong when approving ticket, Error: %', sqlerrm;
+END;
+$$;

@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION delete_medication(
-    med_id uuid
+    p_id uuid
 )
 RETURNS VOID AS $$
 DECLARE
@@ -16,7 +16,7 @@ BEGIN
     END IF;
     UPDATE Medicine m
     SET m.is_available = FALSE
-    WHERE medicine_id = med_id;
+    WHERE medicine_id = p_id;
 --in case something else went wrong
 EXCEPTION
     WHEN OTHERS THEN

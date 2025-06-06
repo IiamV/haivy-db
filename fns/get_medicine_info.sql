@@ -1,20 +1,14 @@
 CREATE OR REPLACE FUNCTION get_medication_info(
-        med_id uuid
+       p_id uuid
 ) 
 RETURNS JSON AS $$ 
-DECLARE
-        result json;
 BEGIN
-        SELECT json_build_object(
-                'name', m.name,
-                'description', m.description,
-                'is_available', m.is_available,
-                'med_time', m.med_time
-        ) INTO result
-        FROM medicine m
-        WHERE m.medicine_id = med_id;
+        RETURN (
+                SELECT to_json(medicine)
+                FROM Medicine m
+                WHERE m.medicine_id = p_id
+        );
 
-        RETURN result;
 -- incase error occurs
 EXCEPTION
         WHEN OTHERS THEN

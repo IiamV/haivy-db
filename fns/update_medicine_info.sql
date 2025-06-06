@@ -1,33 +1,23 @@
-CREATE OR REPLACE FUNCTION update_medication_info(
-    med_id uuid,
-    med_name varchar,
-    med_description text,
-    med_availability boolean,
-    med_time medicine_timing
-)
-RETURNS VOID AS $$
-DECLARE
-    user_role role_type;
+CREATE OR REPLACE FUNCTION public.update_medicine_info(
+    p_id uuid,
+    p_name text DEFAULT NULL,
+    p_description text DEFAULT NULL,
+    p_is_available boolean DEFAULT NULL,
+    p_consumption_note text DEFAULT NULL
+) RETURNS void AS $$
+
 BEGIN
--- take the role from authorized user
-    SELECT s.role
-    FROM staffs s
-    WHERE s.user_id = auth.uid()
-    INTO user_role;
--- restrict operation to admin and manager only
-    IF user_role IS NULL or user_role NOT IN ('admin', 'manager') THEN
-    RAISE EXCEPTION 'You do not have permission to perform this action';
+    IF (auth.uid() IS NULL) OR NOT ((SELECT roles FROM user_details WHERE user_id = auth.uid()) @> ARRAY['administrator', 'manager']::role[]) THEN
+        RAISE EXCEPTION 'You do not have permission to perform this action';
     END IF;
-    UPDATE Medicine m
+
+    UPDATE Medicines
     SET 
-        m.name = med_name,
-        m.description = med_description,
-        m.is_available = med_availability,
-        m.med_time = med_time
-    WHERE m.medicine_id = med_id;
---in case something else went wrong
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'Something went wrong while trying to update medicine: %', SQLERRM;
+        name = COALESCE(p_name, name),
+        description = COALESCE(p_description, description),
+        is_available = COALESCE(p_is_available, is_available),
+        consumption_note = COALESCE(p_consumption_note, consumption_note)
+    WHERE id = p_id;
+
 END;
 $$ LANGUAGE plpgsql;

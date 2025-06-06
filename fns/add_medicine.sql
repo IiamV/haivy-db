@@ -1,8 +1,8 @@
 CREATE OR REPLACE FUNCTION add_medication(
-    med_name varchar,
-    med_description text,
-    med_availability boolean,
-    med_time medicine_timing
+    p_name varchar,
+    p_description text,
+    p_availability boolean,
+    p_time medicine_timing
 )
 RETURNS VOID AS $$
 DECLARE
@@ -22,10 +22,10 @@ BEGIN
         med_time
     )
     VALUES (
-        med_name, 
-        med_description, 
-        med_availability, 
-        med_time
+        p_name, 
+        p_description, 
+        p_availability, 
+        p_time
     );
 EXCEPTION
     WHEN OTHERS THEN

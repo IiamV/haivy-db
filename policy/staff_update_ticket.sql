@@ -1,4 +1,5 @@
-CREATE POLICY "staff_can_update_ticket" ON public.ticket
+CREATE POLICY "staff_can_update_ticket" 
+ON public.ticket
 FOR UPDATE 
 TO authenticated
 USING (

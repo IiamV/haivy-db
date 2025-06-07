@@ -1,190 +1,275 @@
---create the uuid random generate extension, (we had it installed but i'm doing it for asurance ;))
---create extension if not exist "pgcrypto";
------------------------------------
--- account table 
-create table AccountDetails(-- contains basic information of an account
-  account_uid uuid references auth.users(id) on delete cascade,
-  first_name varchar(50), -- can be null and dummy name is auto-generated
-  last_name varchar(50), -- can be null and dummy name is auto-generated
-  dob date, -- can be null
-  profile_picrure text, -- can be null
-  primary key (account_uid)
-);
------------------------------------
---patient table
-create table Patient(
-  patient_uid uuid primary key default gen_random_uuid(), 
-  account_uid uuid,
-  anonymous_status boolean default true, -- when a patient has an account, can be use to set visibility of patient information
-  foreign key (account_uid) references auth.users(id)
-);
------------------------------------
---staff table
-create table Staff(
-  staff_id uuid primary key default gen_random_uuid(),
-  account_uid uuid,
-  foreign key (account_uid) references auth.users(id),
-  role varchar(20),
-  join_date date,
-  status boolean  
-);
------------------------------------
---enum for status ticket/appointment
-create type tik_status as enum('pending','booked', 'closed', 'canceled');
-create type apt_status as enum('pending', 'scheduled', 'in progress', 'completed', 'canceled','no show');
-create type ticket_type as enum('appointment', 'test', 'other');
---ticket table
-create table Ticket(
-  ticket_id uuid primary key default gen_random_uuid(),
-  assigned_to uuid references Staff(staff_id),
-  date_created timestamptz,
-  ticket_type ticket_type,
-  content text,
-  status tik_status default 'pending'
-);
------------------------------------
---appointment table
-create table Appointment(
-  appointment_id uuid primary key default gen_random_uuid(),
-  staff_id uuid,
-  ticket_id uuid,
-  patient_uid uuid,
-  foreign key (staff_id) references Staff(staff_id), 
-  foreign key (ticket_id) references Ticket(ticket_id),
-  foreign key (patient_uid) references Patient(patient_uid),
-  created_date date,
-  meeting_date date,
-  content text,
-  visibility boolean,
-  status apt_status default 'pending'
-);
------------------------------------
---Doctor specification 
-create table Specification(
-  specification_id uuid primary key default gen_random_uuid(),
-  name varchar(50),
-  achieved_date date,
-  level integer
-);
--- create type week_day as enum ('Monday','Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
--- create type session_day as enum ('Morning', 'Afternoon', 'Evening', 'Midnight');
+--
+-- Name: account_type; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."account_type" AS ENUM('staff', 'patient');
 
-create table DoctorSpecification(
-  staff_id uuid,
-  specification_id uuid,
-  foreign key (staff_id) references Staff(staff_id),
-  foreign key (specification_id)references Specification(specification_id),
-  primary key (staff_id, specification_id)
+--
+-- Name: TYPE "account_type"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."account_type" IS 'This discerns between Staffs and user account';
+
+--
+-- Name: appointment_status; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."appointment_status" AS ENUM(
+  'pending',
+  'scheduled',
+  'in_progress',
+  'completed',
+  'canceled',
+  'no_show'
 );
------------------------------------
---doctor schedule
-create table DaySession(
-  day_session varchar(20) primary key default gen_random_uuid(),
-  start_time time,
-  end_time time,
-  location varchar(50),
-  status boolean -- true for Available and false for Busy
+
+--
+-- Name: medicine_timing; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."medicine_timing" AS ENUM(
+  'empty stomach',
+  'before meal',
+  'with meal',
+  'after meal'
 );
-create table WeekDay(
-  day_of_week varchar(20),
-  day_session varchar(20),
-  primary key(day_of_week, day_session),
-  foreign key(day_session) references DaySession(day_session)
+
+--
+-- Name: role; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."role" AS ENUM(
+  'customer',
+  'staff',
+  'doctor',
+  'manager',
+  'administrator'
 );
-create table DoctorSchedule(
-  staff_id uuid references Staff(staff_id),
-  day_of_week varchar(20),
-  day_session varchar(20),
-  primary key (staff_id, day_of_week, day_session),
-  foreign key (day_of_week, day_session) references WeekDay(day_of_week, day_session)
+
+--
+-- Name: staff_role; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."staff_role" AS ENUM('doctor', 'staff', 'manager', 'admin');
+
+--
+-- Name: ticket_interaction_type; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."ticket_interaction_type" AS ENUM(
+  'create',
+  'forward',
+  'cancel',
+  'approve',
+  'other',
+  'comment',
+  'appointment_update',
+  'edit'
 );
------------------------------------
--- --regimen ascociated
-create type med_timing as enum ('empty stomach', 'before meal', 'with meal', 'after meal'); 
-/*
-explaination:
-1.empty stomach ->  at least 1hr before meal or ~2hr after meal
-2.before meal -> ~15-30min before meal
-3.with meal -> taken together when having meal
-4. after meal -> ~15-30min after a meal
-the enums can be compared as numbered (ex: empty stomach < before meal)
-*/
-create table Medicine(
-  medicine_id uuid primary key default gen_random_uuid(),
-  name varchar(50),
-  description text,
-  is_available boolean,
-  med_time med_timing
-);
------------------------------------
---prescription table
-create table Prescription(
-  prescription_id uuid primary key default gen_random_uuid(),
-  name varchar(50),
-  note text
-);
-create table PrescriptionDetail(
-  prescription_detail_id uuid primary key default gen_random_uuid(),
-  prescription_id uuid,
-  medicine_id uuid,
-  foreign key (prescription_id) references Prescription(prescription_id),
-  foreign key (medicine_id) references Medicine(medicine_id),
-  start_time timestamptz,
-  end_time timestamptz,
-  dosage float,
-  interval integer,
-  note text
-);
------------------------------------
--- customized regimen
-create table CustomizedRegimen(
-  cus_regimen_id uuid primary key default gen_random_uuid(),
-  name varchar(50),
-  description text,
-  create_time date
-);
-create table CustomizedRegimenDetail(
-  cus_regimen_detail_id uuid primary key default gen_random_uuid(),
-  cus_regimen_id uuid,
-  prescription_id uuid,
-  foreign key (cus_regimen_id) references CustomizedRegimen(cus_regimen_id),
-  foreign key (prescription_id) references Prescription(prescription_id),
-  start_date date,
-  end_date date,
-  total_dosage float,
-  frequency integer,
-  note text
-);
------------------------------------
--- original regimen
-create table Regimen(
-  regimen_id uuid primary key default gen_random_uuid(),
-  name varchar(50),
-  create_date date,
-  description text
-);
-create table RegimenDetail(
-  regimen_detail_id uuid primary key default gen_random_uuid(),
-  regimen_id uuid,
-  medicine_id uuid,
-  foreign key (regimen_id) references Regimen(regimen_id),
-  foreign key (medicine_id) references Medicine(medicine_id),
-  start_date date,
-  end_date date,
-  total_dosage float,
-  frequency integer,
-  note text
-);
------------------------------------
---patient medicine intake history
-create table IntakeHistory(
-  intake_id uuid primary key default gen_random_uuid(),
-  patient_uid uuid,
-  prescription_id uuid,
-  foreign key (patient_uid) references Patient(patient_uid),
-  foreign key (prescription_id) references Prescription(prescription_id),
-  take_time timestamptz,
-  missed boolean,
-  note text,
-  remind_inc_appointment boolean
-);
+
+--
+-- Name: TYPE "ticket_interaction_type"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."ticket_interaction_type" IS 'This denotes what was done to the ticket.';
+
+--
+-- Name: ticket_status; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."ticket_status" AS ENUM('pending', 'cancelled', 'approved');
+
+--
+-- Name: TYPE "ticket_status"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."ticket_status" IS 'Tickets are units of work for staffs to process, it can be related to company''s operations like appointments, tests, database requests,.. etc. It can be of 3 statuses: pending - The ticket is currently being processed, cancelled - The ticket was cancelled (Unsuccessful), approved - The ticket was approved (Successful)';
+
+--
+-- Name: ticket_type; Type: TYPE; Schema: public; Owner: -
+--
+CREATE TYPE "public"."ticket_type" AS ENUM('appointment', 'test', 'other');
+
+--
+-- Name: TYPE "ticket_type"; Type: COMMENT; Schema: public; Owner: -
+--
+COMMENT ON
+TYPE "public"."ticket_type" IS 'This is possible ticket types';
+
+CREATE TABLE
+  public.appointment (
+    appointment_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    staff_id uuid,
+    ticket_id uuid,
+    patient_id uuid,
+    created_date timestamp with time zone DEFAULT (now() AT TIME ZONE 'utc'::text),
+    meeting_date timestamp with time zone,
+    content text,
+    visible boolean NOT NULL DEFAULT false,
+    status USER - DEFINED DEFAULT 'pending'::appointment_status,
+    duration smallint NOT NULL DEFAULT '30'::smallint,
+    CONSTRAINT appointment_pkey PRIMARY KEY (appointment_id),
+    CONSTRAINT appointment_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES auth.users (id),
+    CONSTRAINT appointment_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.ticket (ticket_id),
+    CONSTRAINT appointment_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES auth.users (id)
+  );
+
+CREATE TABLE
+  public.customizedregimen (
+    cus_regimen_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    name character varying,
+    description text,
+    create_time date,
+    CONSTRAINT customizedregimen_pkey PRIMARY KEY (cus_regimen_id)
+  );
+
+CREATE TABLE
+  public.customizedregimendetail (
+    cus_regimen_detail_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    cus_regimen_id uuid,
+    prescription_id uuid,
+    start_date date,
+    end_date date,
+    total_dosage double precision,
+    frequency integer,
+    note text,
+    CONSTRAINT customizedregimendetail_pkey PRIMARY KEY (cus_regimen_detail_id),
+    CONSTRAINT customizedregimendetail_prescription_id_fkey FOREIGN KEY (prescription_id) REFERENCES public.prescriptions (prescription_id),
+    CONSTRAINT customizedregimendetail_cus_regimen_id_fkey FOREIGN KEY (cus_regimen_id) REFERENCES public.customizedregimen (cus_regimen_id)
+  );
+
+CREATE TABLE
+  public.intakehistory (
+    intake_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    patient_uid uuid,
+    prescription_id uuid,
+    take_time timestamp with time zone,
+    missed boolean,
+    note text,
+    remind_inc_appointment boolean,
+    CONSTRAINT intakehistory_pkey PRIMARY KEY (intake_id),
+    CONSTRAINT intakehistory_prescription_id_fkey FOREIGN KEY (prescription_id) REFERENCES public.prescriptions (prescription_id)
+  );
+
+CREATE TABLE
+  public.medicines (
+    medicine_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    name character varying,
+    description text,
+    is_available boolean,
+    med_time USER - DEFINED,
+    CONSTRAINT medicines_pkey PRIMARY KEY (medicine_id)
+  );
+
+CREATE TABLE
+  public.prescription_details (
+    prescription_detail_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    prescription_id uuid,
+    medicine_id uuid,
+    start_time timestamp with time zone,
+    end_time timestamp with time zone,
+    dosage double precision,
+    interval integer,
+    note text,
+    CONSTRAINT prescription_details_pkey PRIMARY KEY (prescription_detail_id),
+    CONSTRAINT prescriptiondetail_medicine_id_fkey FOREIGN KEY (medicine_id) REFERENCES public.medicines (medicine_id),
+    CONSTRAINT prescriptiondetail_prescription_id_fkey FOREIGN KEY (prescription_id) REFERENCES public.prescriptions (prescription_id)
+  );
+
+CREATE TABLE
+  public.prescriptions (
+    prescription_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    name character varying,
+    note text,
+    CONSTRAINT prescriptions_pkey PRIMARY KEY (prescription_id)
+  );
+
+CREATE TABLE
+  public.random_name_pool (
+    id integer NOT NULL DEFAULT nextval('random_name_pool_id_seq'::regclass),
+    name text NOT NULL,
+    CONSTRAINT random_name_pool_pkey PRIMARY KEY (id)
+  );
+
+CREATE TABLE
+  public.regimen_details (
+    regimen_detail_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    regimen_id uuid,
+    medicine_id uuid,
+    start_date date,
+    end_date date,
+    total_dosage double precision,
+    frequency integer,
+    note text,
+    CONSTRAINT regimen_details_pkey PRIMARY KEY (regimen_detail_id),
+    CONSTRAINT regimendetail_medicine_id_fkey FOREIGN KEY (medicine_id) REFERENCES public.medicines (medicine_id),
+    CONSTRAINT regimendetail_regimen_id_fkey FOREIGN KEY (regimen_id) REFERENCES public.regimens (regimen_id)
+  );
+
+CREATE TABLE
+  public.regimens (
+    regimen_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    name character varying,
+    create_date date,
+    description text,
+    CONSTRAINT regimens_pkey PRIMARY KEY (regimen_id)
+  );
+
+CREATE TABLE
+  public.specification_ownerships (
+    staff_id uuid NOT NULL,
+    specification_id uuid NOT NULL,
+    CONSTRAINT specification_ownerships_pkey PRIMARY KEY (staff_id, specification_id),
+    CONSTRAINT specification_ownerships_specification_id_fkey FOREIGN KEY (specification_id) REFERENCES public.specifications_types (specification_id),
+    CONSTRAINT specification_ownerships_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES public.staffs (user_id)
+  );
+
+CREATE TABLE
+  public.specifications_types (
+    specification_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    name text,
+    description text,
+    CONSTRAINT specifications_types_pkey PRIMARY KEY (specification_id)
+  );
+
+CREATE TABLE
+  public.staffs (
+    user_id uuid NOT NULL,
+    join_date date NOT NULL DEFAULT (now())::date,
+    is_active boolean NOT NULL DEFAULT true,
+    leave_date date,
+    CONSTRAINT staffs_pkey PRIMARY KEY (user_id),
+    CONSTRAINT staffs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id)
+  );
+
+CREATE TABLE
+  public.ticket (
+    ticket_id uuid NOT NULL DEFAULT gen_random_uuid (),
+    assigned_to uuid,
+    date_created date DEFAULT now(),
+    content text,
+    title text,
+    ticket_type USER - DEFINED NOT NULL DEFAULT 'other'::ticket_type,
+    created_by uuid,
+    status USER - DEFINED NOT NULL DEFAULT 'pending'::ticket_status,
+    CONSTRAINT ticket_pkey PRIMARY KEY (ticket_id),
+    CONSTRAINT ticket_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users (id),
+    CONSTRAINT ticket_assigned_to_fkey FOREIGN KEY (assigned_to) REFERENCES public.staffs (user_id)
+  );
+
+CREATE TABLE
+  public.ticket_interaction_history (
+    id bigint GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
+    ticket_id uuid NOT NULL,
+    time timestamp with time zone NOT NULL DEFAULT now(),
+    action USER - DEFINED NOT NULL DEFAULT 'other'::ticket_interaction_type,
+    note text,
+    by uuid DEFAULT auth.uid (),
+    CONSTRAINT ticket_interaction_history_pkey PRIMARY KEY (id),
+    CONSTRAINT ticket_interaction_history_by_fkey FOREIGN KEY (by) REFERENCES auth.users (id),
+    CONSTRAINT ticket_interaction_history_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.ticket (ticket_id)
+  );
+
+CREATE TABLE
+  public.user_details (
+    user_id uuid NOT NULL,
+    full_name text NOT NULL DEFAULT get_random_name (),
+    birth_date date,
+    profile_image_url text,
+    roles ARRAY NOT NULL,
+    CONSTRAINT user_details_pkey PRIMARY KEY (user_id),
+    CONSTRAINT user_details_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id)
+  );

@@ -9,6 +9,7 @@ end;
 $$ language plpgsql;
 -----------------------------------------------------------------------------------
 -- a second function incase staffs wants to get log  or want to take ticket uuid for further uses
+-- 
 create or replace function spawn_ticket_with_noti_and_id_returned(f_assigned_to uuid, f_content text )
 return uuid as $$
 declare

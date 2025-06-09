@@ -1,6 +1,6 @@
 create or replace function dev.update_regimen(
     p_regimen_id uuid,
-    p_name text,
+    p_name text default null,
     p_description text default null,
     p_level smallint default null,
     p_is_for_adults boolean default null,
@@ -15,7 +15,11 @@ declare
     override_json json;
 begin
     --check user role
-    if(auth.uid() is null) or not ((select roles from user_details where user_id = auth.uid()) @> array['administrator', 'manager']::role[])
+    -- if(auth.uid() is null) or not ((select roles from user_details where user_id = auth.uid()) @> array['administrator', 'manager']::role[])
+    -- then
+    -- raise exception 'You do not have permission to perform this action';
+    -- end if;
+    if not(check_roles(array['administrator', 'manager'])::role[]) then
     then
     raise exception 'You do not have permission to perform this action';
     end if;
@@ -23,7 +27,7 @@ begin
     --update the table regimens
         update regimens
         set
-            name = p_name,
+            name = coalesce(p_name, name),
             description = coalesce(p_description, description),
             level = coalesce(p_level, level),
             is_for_adults = coalesce(p_is_for_adults, is_for_adults)       
@@ -45,9 +49,6 @@ begin
                 p_daily_dosage_schedule
             );
         end loop;
-        exception
-        when others then
-        raise exception 'Something went wrong while trying to update regimen: %', SQLERRM;    
     end;
 end;
 $$

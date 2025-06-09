@@ -8,7 +8,11 @@ returns void as
 $$
 begin
 --check user role
-    if(auth.uid() is null) or not ((select roles from user_details where user_id = auth.uid()) @> array['administrator', 'manager']::role[])
+    -- if(auth.uid() is null) or not ((select roles from user_details where user_id = auth.uid()) @> array['administrator', 'manager']::role[])
+    -- then
+    -- raise exception 'You do not have permission to perform this action';
+    -- end if;
+    if not(check_roles(array['administrator', 'manager'])::role[]) then
     then
     raise exception 'You do not have permission to perform this action';
     end if;
@@ -28,7 +32,6 @@ begin
     raise exception 'Regimen id does not exist: %s', p_regimen_id;
     end if;
 --start adding medicine to regimen
-    begin
         insert into regimen_details(
             regimen_id,
             medicine_id,
@@ -41,11 +44,6 @@ begin
             p_total_day,
             p_daily_dosage_schedule
         );
-        --in case something else went wrong
-        exception
-        when others then
-        raise exception 'Something went wrong while trying to add medicine to regimen: %', SQLERRM;
-    end;
 end;
 $$
 language plpgsql;

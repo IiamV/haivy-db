@@ -2,7 +2,7 @@ create or replace function dev.delete_regimen(p_regimen_id uuid)
 returns void as
 $$
 begin
-    if(auth.uid() is null) or not ((select roles from user_details where user_id = auth.uid()) @> array['administrator', 'manager']::role[]) 
+    if not(check_roles(array['administrator', 'manager'])::role[]) then
     then
     raise exception 'You do not have permission to perform this action';
     end if;

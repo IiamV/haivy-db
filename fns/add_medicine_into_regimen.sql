@@ -2,7 +2,7 @@ create or replace function dev.add_medicine_into_regimen(
     p_medicine_id uuid,
     p_regimen_id uuid,
     p_total_day smallint,
-    p_daily_dosage_schedule json
+    p_daily_dosage_schedule jsonb
 )
 returns void as 
 $$
@@ -12,16 +12,9 @@ begin
     -- then
     -- raise exception 'You do not have permission to perform this action';
     -- end if;
-    if not(public.check_roles(array['administrator', 'manager'])::role[]) then
-    then
-    raise exception 'You do not have permission to perform this action';
-    end if;
+    select check_roles(array['administrator', 'manager']::role[]);
 --eheck for valid json
-    if jsonb_array_length(p_daily_dosage_schedule::jsonb) = 0 
-    then
-    raise exception 'Dosage schedule cannot be empty';
-    end if;
-
+    select validate_daily_dosage_schedule(p_daily_dosage_schedule);
 --check if medicine exist
     if not exists (select 1 from mecidicines where id = p_medicine_id)
     then

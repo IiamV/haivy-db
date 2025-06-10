@@ -38,6 +38,7 @@ begin
             p_medicine_id := override_json ->> 'medicine_id';
             p_total_day := override_json ->> 'total_day'::smallint;
             p_daily_dosage_schedule := override_json -> 'daily_dosage_schedule';
+            select validate_daily_dosage_schedule(p_daily_dosage_schedule::jsonb);
             --delete the old medicine
             delete from regimen_details rd
             where rd.regimen_id = p_regimen_id

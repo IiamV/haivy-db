@@ -14,9 +14,5 @@ BEGIN
             WHERE rd.regimen_id = p_regimen_id
         ) AS details
     );
-    
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'Error retrieving regimen details: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql;

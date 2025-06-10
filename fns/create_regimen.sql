@@ -50,9 +50,5 @@ BEGIN
     END IF;
 
     RETURN v_regimen_id;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'Error creating regimen: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql;

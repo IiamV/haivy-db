@@ -19,9 +19,5 @@ BEGIN
             LIMIT _limit OFFSET _offset
         ) AS reg
     );
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'Error querying regimens: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql;

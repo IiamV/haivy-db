@@ -15,13 +15,11 @@ begin
     where apt.appointment_id = id_to_update
     into temp_ticket_id;
 --update corresponding ticket interaction history
-    insert into Ticket_interaction_history(ticket_id, time, action, note, "by")
+    insert into Ticket_interaction_history(ticket_id, action, note)
     values (
         temp_ticket_id,
-        now(),
         'appointment_update',
-        format('Updated appointment id: %s  with new duration: %s', id_to_update::text, new_duration),    -- format for readability
-        auth.uid()                                                      -- this takes id from user who logged in
+        format('Updated appointment id: %s  with new duration: %s', id_to_update::text, new_duration)    -- format for readability
     );
 end;
 $$

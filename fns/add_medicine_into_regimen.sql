@@ -12,17 +12,18 @@ begin
     -- then
     -- raise exception 'You do not have permission to perform this action';
     -- end if;
-    if not(check_roles(array['administrator', 'manager'])::role[]) then
+    if not(public.check_roles(array['administrator', 'manager'])::role[]) then
     then
     raise exception 'You do not have permission to perform this action';
     end if;
---eheck for empty json
-    if json_array_length(p_daily_dosage_schedule) = 0 
+--eheck for valid json
+    if jsonb_array_length(p_daily_dosage_schedule::jsonb) = 0 
     then
     raise exception 'Dosage schedule cannot be empty';
     end if;
+
 --check if medicine exist
-    if not exists (select 1 from mecidicines where medicine_id = p_medicine_id)
+    if not exists (select 1 from mecidicines where id = p_medicine_id)
     then
     raise exception 'Medicine id does not exist: %s', p_medicine_id;
     end if;
@@ -43,7 +44,7 @@ begin
             p_medicine_id,
             p_total_day,
             p_daily_dosage_schedule
-        );
+        ) ON CONFLICT DO UPDATE;
 end;
 $$
 language plpgsql;

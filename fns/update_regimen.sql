@@ -19,10 +19,7 @@ begin
     -- then
     -- raise exception 'You do not have permission to perform this action';
     -- end if;
-    if not(public.check_roles(array['administrator', 'manager'])::role[]) then
-    then
-    raise exception 'You do not have permission to perform this action';
-    end if;
+    select check_roles(array['administrator', 'manager']::role[]);
     begin
     --update the table regimens
         update regimens

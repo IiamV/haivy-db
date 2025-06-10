@@ -11,8 +11,16 @@ DECLARE
     v_medicine_item json;
     v_medicine_id uuid;
     v_total_day smallint;
-    v_daily_dosage_schedule json;
+    v_daily_dosage_schedule jsonb;
 BEGIN
+    --check user role
+    -- if(auth.uid() is null) or not ((select roles from user_details where user_id = auth.uid()) @> array['administrator', 'manager']::role[])
+    -- then
+    -- raise exception 'You do not have permission to perform this action';
+    -- end if;
+    select check_roles(array['administrator', 'manager']::role[]);
+       
+
     INSERT INTO regimens (
         name,
         description,
@@ -29,8 +37,13 @@ BEGIN
         FOR v_medicine_item IN SELECT value FROM json_array_elements(default_medicines)
         LOOP
             v_medicine_id := (v_medicine_item ->> 'medicine_id')::uuid;
+            if not exists (select 1 from medicines where id = v_medicine_id)
+            then
+            raise exception 'Medicine id does not exist: %s', v_medicine_id;
+            end if;
             v_total_day := (v_medicine_item ->> 'total_day')::smallint;
             v_daily_dosage_schedule := v_medicine_item -> 'daily_dosage_schedule';
+            PERFORM public.validate_daily_dosage_schedule(v_daily_dosage_schedule::jsonb); 
 
             INSERT INTO regimen_details(regimen_id, medicine_id, total_day, daily_dosage_schedule) VALUES(v_regimen_id, v_medicine_id, v_total_day, v_daily_dosage_schedule);
         END LOOP;

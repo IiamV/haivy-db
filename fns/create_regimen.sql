@@ -18,7 +18,7 @@ BEGIN
     -- then
     -- raise exception 'You do not have permission to perform this action';
     -- end if;
-    -- select check_roles(array['administrator', 'manager']::role[]);
+    select check_roles(array['administrator', 'manager']::role[]);
        
 
     INSERT INTO regimens (
